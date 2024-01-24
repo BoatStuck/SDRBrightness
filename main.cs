@@ -25,11 +25,11 @@ namespace ScreenBrightnessSetter
     }
 
     class Program
-	{
-		[DllImport("kernel32", CharSet = CharSet.Unicode)]
-		static extern IntPtr LoadLibrary(string lpFileName);
-		[DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
-		static extern IntPtr GetProcAddress(IntPtr hModule, int address);
+    {
+	[DllImport("kernel32", CharSet = CharSet.Unicode)]
+	static extern IntPtr LoadLibrary(string lpFileName);
+	[DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+	static extern IntPtr GetProcAddress(IntPtr hModule, int address);
 
         [DllImport("user32.dll")]
         static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, EnumMonitorsDelegate lpfnEnum, IntPtr dwData);
@@ -96,51 +96,50 @@ namespace ScreenBrightnessSetter
 
 
         static void Main(string[] args)
+	{
+		double brightness = 1.0;
+		double maxBrightness = 6.0;
+		double minBrightness = 1.0;
+
+		double argBrightness;
+		
+		if (args.Length > 0)
 		{
-			double brightness = 1.0;
-			double maxBrightness = 6.0;
-			double minBrightness = 1.0;
-
-            double argBrightness;
-
-            if (args.Length > 0)
+			if (!double.TryParse(args[0], out argBrightness))
 			{
-				if (!double.TryParse(args[0], out argBrightness))
-				{
-					// .. error with input
-					Console.WriteLine("Cannot parse, exiting: " + args[0]);
-					return;
-				}
-			} else
-			{
-                Console.WriteLine("Enter desired brightness from 1.0 to 6.0:");
-                if (!double.TryParse(Console.ReadLine(), out argBrightness))
-                {
-                    // .. error with input
-                    Console.WriteLine("Cannot parse input, exiting");
-                    return;
-                }
-
-            }
-
-            Console.WriteLine("Parsed " + argBrightness);
-            if (argBrightness < minBrightness)
-                argBrightness = minBrightness;
-            else if (argBrightness > maxBrightness)
-                argBrightness = maxBrightness;
-
-            brightness = argBrightness;
-            Console.WriteLine("Setting brightness " + brightness);
-
-            var hmodule_dwmapi = LoadLibrary("dwmapi.dll");
+				// .. error with input
+				Console.WriteLine("Cannot parse, exiting: " + args[0]);
+				return;
+			}
+		} else
+		{
+	                Console.WriteLine("Enter desired brightness from 1.0 to 6.0:");
+	                if (!double.TryParse(Console.ReadLine(), out argBrightness))
+	                {
+				// .. error with input
+				Console.WriteLine("Cannot parse input, exiting");
+				return;
+	                }
+		}
+		
+		Console.WriteLine("Parsed " + argBrightness);
+		if (argBrightness < minBrightness)
+			argBrightness = minBrightness;
+		else if (argBrightness > maxBrightness)
+			argBrightness = maxBrightness;
+		
+		brightness = argBrightness;
+		Console.WriteLine("Setting brightness " + brightness);
+		
+		var hmodule_dwmapi = LoadLibrary("dwmapi.dll");
 			DwmpSDRToHDRBoostPtr changeBrightness = Marshal.GetDelegateForFunctionPointer<DwmpSDRToHDRBoostPtr>(GetProcAddress(hmodule_dwmapi, 171));
-
-            DisplayInfoCollection monitors = GetDisplays();
-            foreach(DisplayInfo monitor in monitors)
-            {
-                Console.WriteLine("Changing brightness for monitor handle: " + monitor.MonitorHandle + " to: " + brightness);
-                changeBrightness(monitor.MonitorHandle, brightness);
-            }
+		
+		DisplayInfoCollection monitors = GetDisplays();
+		foreach(DisplayInfo monitor in monitors)
+		{
+			Console.WriteLine("Changing brightness for monitor handle: " + monitor.MonitorHandle + " to: " + brightness);
+			changeBrightness(monitor.MonitorHandle, brightness);
+		}
         }
     }
 }
